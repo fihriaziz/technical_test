@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\auth\AuthController;
+use App\Http\Controllers\RoleController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -15,15 +16,19 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
-});
-
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/register', [AuthController::class, 'register']);
-Route::post('/forgot', [AuthController::class, 'forgot']);
+Route::post('/forgot-password', [AuthController::class, 'forgot'])->name('password.reset');
 
-Route::middleware('auth')->group(function () {
+Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
-    Route::post('/reset', [AuthController::class, 'reset']);
+    Route::post('/reset-password', [AuthController::class, 'reset']);
+
+    Route::get('/users', [RoleController::class, 'showUsers']);
+
+    Route::post('/add-user', [RoleController::class, 'addUser']);
+    Route::put('/update-user/{id}', [RoleController::class, 'update']);
+    Route::delete('/delete-user/{id}', [RoleController::class, 'delete']);
+
+    Route::put('/change/{id}', [RoleController::class, 'changeAkses']);
 });
