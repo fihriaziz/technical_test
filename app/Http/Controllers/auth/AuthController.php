@@ -4,7 +4,6 @@ namespace App\Http\Controllers\auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
-use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
@@ -72,10 +71,10 @@ class AuthController extends Controller
                 'email' => 'required|email'
             ]);
             $status = Password::sendResetLink($credentials);
-            return response()->json([
-                'data' => $status,
-                'message' => 'Reset password sent to your email'
-            ], 200);
+
+            return $status = Password::RESET_LINK_SENT
+                ? response()->json(['message' => 'Sent reset password'], 200)
+                : back()->withErrors(['email' => $status]);
         } catch (\Exception $e) {
             return response()->json(['message' => $e->getMessage()]);
         }
