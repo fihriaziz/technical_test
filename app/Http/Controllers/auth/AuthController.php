@@ -74,4 +74,28 @@ class AuthController extends Controller
             return response()->json(['message' => $e->getMessage()]);
         }
     }
+
+    public function reset(Request $req)
+    {
+        try {
+            $credentials = $this->validate($req, [
+                'email' => 'required',
+                'password' => 'required',
+                'token' => 'required'
+            ]);
+
+            $reset_password = Password::reset($credentials, function ($user, $password) {
+                $user->password = $password;
+                $user->save();
+            });
+
+            if ($reset_password == Password::INVALID_TOKEN) {
+                return response()->json(['message' => 'Invalid Token'], 400);
+            }
+
+            return response()->json(['message' => 'Password has been changed']);
+        } catch (\Exception $e) {
+            return response()->json(['message' => $e->getMessage()]);
+        }
+    }
 }
