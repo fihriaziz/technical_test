@@ -12,7 +12,7 @@ class AuthController extends Controller
     {
         try {
             $user = User::where('email', $req->email)->first();
-            $token = $user->createToken()->plainTextToken;
+            $token = $user->createToken('auth_access')->plainTextToken;
 
             $credentials = $req->only(['email', 'password']);
             if (!$credentials) {
