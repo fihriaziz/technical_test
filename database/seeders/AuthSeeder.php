@@ -18,7 +18,8 @@ class AuthSeeder extends Seeder
         User::create([
             'name' => 'fihri aziz',
             'email' => 'fihriaziz@gmail.com',
-            'password' => bcrypt('password')
+            'password' => bcrypt('password'),
+            'role' => 'Admin'
         ]);
     }
 }

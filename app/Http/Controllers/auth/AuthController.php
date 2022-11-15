@@ -5,6 +5,7 @@ namespace App\Http\Controllers\auth;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Password;
 
 class AuthController extends Controller
 {
@@ -14,7 +15,8 @@ class AuthController extends Controller
             $user = User::create([
                 'name' => $req->name,
                 'email' => $req->email,
-                'password' => bcrypt($req->password)
+                'password' => bcrypt($req->password),
+                'role' => $req->role
             ]);
 
             return response()->json([
@@ -42,9 +44,34 @@ class AuthController extends Controller
                 'data' => $user,
                 'access_token' => $token,
                 'type' => 'Bearer'
-            ]);
+            ], 200);
         } catch (\Exception $e) {
             return response()->json(['message:' . $e->getMessage()]);
+        }
+    }
+
+    public function logout()
+    {
+        try {
+            auth()->logout;
+            return response()->json([
+                'message' => 'Logout Success'
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json(['message' => $e->getMessage()]);
+        }
+    }
+
+    public function forgot(Request $req)
+    {
+        try {
+            $credentials = $req->only(['email']);
+            Password::sendResetLink($credentials);
+            return response()->json([
+                'message' => 'Reset password sent to your email'
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json(['message' => $e->getMessage()]);
         }
     }
 }
