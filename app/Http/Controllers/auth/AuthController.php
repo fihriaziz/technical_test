@@ -8,6 +8,23 @@ use Illuminate\Http\Request;
 
 class AuthController extends Controller
 {
+    public function register(Request $req)
+    {
+        try {
+            $user = User::create([
+                'name' => $req->name,
+                'email' => $req->email,
+                'password' => bcrypt($req->password)
+            ]);
+
+            return response()->json([
+                'data' => $user
+            ], 201);
+        } catch (\Exception $e) {
+            return response()->json(['message' => $e->getMessage()], 500);
+        }
+    }
+
     public function login(Request $req)
     {
         try {
