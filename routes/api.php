@@ -22,7 +22,7 @@ Route::post('/forgot-password', [AuthController::class, 'forgot'])->name('passwo
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
-    Route::post('/reset-password', [AuthController::class, 'reset']);
+    Route::put('/reset-password/{id}', [AuthController::class, 'reset']);
 
     Route::get('/users', [RoleController::class, 'showUsers']);
 

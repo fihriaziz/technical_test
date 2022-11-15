@@ -4,7 +4,10 @@ namespace App\Http\Controllers\auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Password;
 
 class AuthController extends Controller
@@ -16,6 +19,7 @@ class AuthController extends Controller
                 'name' => $req->name,
                 'email' => $req->email,
                 'password' => bcrypt($req->password),
+                'role' => $req->role
             ]);
 
             return response()->json([
@@ -33,7 +37,7 @@ class AuthController extends Controller
             $token = $user->createToken('auth_access')->plainTextToken;
 
             $credentials = $req->only(['email', 'password']);
-            if (!$credentials) {
+            if (!Auth::attempt($credentials)) {
                 return response()->json([
                     'message' => 'Unauthorized'
                 ], 403);
@@ -64,9 +68,12 @@ class AuthController extends Controller
     public function forgot(Request $req)
     {
         try {
-            $credentials = $req->only(['email']);
-            Password::sendResetLink($credentials);
+            $credentials = $this->validate($req, [
+                'email' => 'required|email'
+            ]);
+            $status = Password::sendResetLink($credentials);
             return response()->json([
+                'data' => $status,
                 'message' => 'Reset password sent to your email'
             ], 200);
         } catch (\Exception $e) {
@@ -74,25 +81,22 @@ class AuthController extends Controller
         }
     }
 
-    public function reset(Request $req)
+    public function reset(Request $req, $id)
     {
         try {
-            $credentials = $this->validate($req, [
-                'email' => 'required',
-                'password' => 'required',
-                'token' => 'required'
+            $this->validate($req, [
+                'password' => 'required'
             ]);
 
-            $reset_password = Password::reset($credentials, function ($user, $password) {
-                $user->password = $password;
-                $user->save();
-            });
+            $user = User::findOrFail($id);
 
-            if ($reset_password == Password::INVALID_TOKEN) {
-                return response()->json(['message' => 'Invalid Token'], 400);
-            }
+            $user->update([
+                'password' => bcrypt($req->password)
+            ]);
 
-            return response()->json(['message' => 'Password has been changed'], 200);
+            return response()->json([
+                'message' => 'Password has been changed'
+            ], 201);
         } catch (\Exception $e) {
             return response()->json(['message' => $e->getMessage()]);
         }
