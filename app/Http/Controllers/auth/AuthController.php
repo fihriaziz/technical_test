@@ -16,7 +16,6 @@ class AuthController extends Controller
                 'name' => $req->name,
                 'email' => $req->email,
                 'password' => bcrypt($req->password),
-                'role' => $req->role
             ]);
 
             return response()->json([
@@ -93,7 +92,7 @@ class AuthController extends Controller
                 return response()->json(['message' => 'Invalid Token'], 400);
             }
 
-            return response()->json(['message' => 'Password has been changed']);
+            return response()->json(['message' => 'Password has been changed'], 200);
         } catch (\Exception $e) {
             return response()->json(['message' => $e->getMessage()]);
         }
