@@ -63,6 +63,11 @@ class AuthController extends Controller
         }
     }
 
+    public function me()
+    {
+        return Auth::user();
+    }
+
     public function logout(Request $req)
     {
         try {
@@ -89,6 +94,19 @@ class AuthController extends Controller
         } catch (\Exception $e) {
             return response()->json(['message' => $e->getMessage()]);
         }
+    }
+
+    public function forgot_password($token)
+    {
+        if (!$token) {
+            return response()->json([
+                'message' => 'Not found'
+            ], 404);
+        }
+
+        return response()->json([
+            'token' => $token
+        ]);
     }
 
     public function reset(Request $req, $id)

@@ -15,12 +15,14 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::post('/login', [AuthController::class, 'login'])->middleware('guest');
+Route::post('/login', [AuthController::class, 'login'])->middleware('guest')->name('login');
 Route::post('/register', [AuthController::class, 'register'])->middleware('guest');
 Route::post('/forgot-password', [AuthController::class, 'forgot']);
 Route::get('/forgot-password/{token}', [AuthController::class, 'forgot_password'])->name('password.reset');
 
 Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/profile', [AuthController::class, 'me']);
+
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::put('/reset-password/{id}', [AuthController::class, 'reset']);
 
