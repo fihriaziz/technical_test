@@ -26,6 +26,13 @@ class RoleController extends Controller
     public function addUser(Request $req)
     {
         try {
+            $req->validate([
+                'name' => 'required',
+                'email' => 'required|email|unique:users,email',
+                'password' => 'required',
+                'role' => 'required'
+            ]);
+
             $user = User::create([
                 'name' => $req->name,
                 'email' => $req->email,
@@ -47,6 +54,11 @@ class RoleController extends Controller
     public function update(Request $req, $id)
     {
         try {
+            $req->validate([
+                'name' => 'required',
+                'email' => 'required|email'
+            ]);
+
             $user = User::findOrFail($id);
 
             $data = [

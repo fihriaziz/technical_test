@@ -13,6 +13,13 @@ class AuthController extends Controller
     public function register(Request $req)
     {
         try {
+            $req->validate([
+                'name' => 'required',
+                'email' => 'required|email|unique:users,email',
+                'password' => 'required',
+                'role' => 'required'
+            ]);
+
             $user = User::create([
                 'name' => $req->name,
                 'email' => $req->email,
@@ -31,6 +38,11 @@ class AuthController extends Controller
     public function login(Request $req)
     {
         try {
+            $req->validate([
+                'email' => 'required|email',
+                'password' => 'required'
+            ]);
+
             $user = User::where('email', $req->email)->first();
             $token = $user->createToken('auth_access')->plainTextToken;
 
@@ -66,7 +78,7 @@ class AuthController extends Controller
     public function forgot(Request $req)
     {
         try {
-            $credentials = $this->validate($req, [
+            $credentials = $req->validate([
                 'email' => 'required|email'
             ]);
             $status = Password::sendResetLink($credentials);
@@ -82,7 +94,7 @@ class AuthController extends Controller
     public function reset(Request $req, $id)
     {
         try {
-            $this->validate($req, [
+            $req->validate([
                 'password' => 'required'
             ]);
 
