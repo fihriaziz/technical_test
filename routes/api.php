@@ -1,8 +1,7 @@
 <?php
 
-use App\Http\Controllers\auth\AuthController;
-use App\Http\Controllers\RoleController;
-use Illuminate\Http\Request;
+use App\Http\Controllers\api\AuthController;
+use App\Http\Controllers\api\RoleController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -16,8 +15,8 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::post('/login', [AuthController::class, 'login']);
-Route::post('/register', [AuthController::class, 'register']);
+Route::post('/login', [AuthController::class, 'login'])->middleware('guest');
+Route::post('/register', [AuthController::class, 'register'])->middleware('guest');
 Route::post('/forgot-password', [AuthController::class, 'forgot']);
 Route::get('/forgot-password/{token}', [AuthController::class, 'forgot_password'])->name('password.reset');
 

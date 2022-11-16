@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\auth;
+namespace App\Http\Controllers\api;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
@@ -38,7 +38,7 @@ class AuthController extends Controller
             if (!Auth::attempt($credentials)) {
                 return response()->json([
                     'message' => 'Unauthorized'
-                ], 403);
+                ], 401);
             }
 
             return response()->json([
