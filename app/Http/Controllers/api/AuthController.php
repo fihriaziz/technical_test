@@ -3,9 +3,13 @@
 namespace App\Http\Controllers\api;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\DB;
 use App\Models\User;
+use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 
 class AuthController extends Controller
@@ -68,7 +72,7 @@ class AuthController extends Controller
         return Auth::user();
     }
 
-    public function logout(Request $req)
+    public function logout()
     {
         try {
             Auth::user()->tokens()->where('id', Auth::user()->id)->delete();
@@ -80,7 +84,7 @@ class AuthController extends Controller
         }
     }
 
-    public function forgot(Request $req)
+    public function forgot_password(Request $req)
     {
         try {
             $credentials = $req->validate([
@@ -96,37 +100,41 @@ class AuthController extends Controller
         }
     }
 
-    public function forgot_password($token)
+    public function reset_token($token)
     {
-        if (!$token) {
-            return response()->json([
-                'message' => 'Not found'
-            ], 404);
-        }
-
-        return response()->json([
-            'token' => $token
-        ]);
+        return $token;
     }
 
-    public function reset(Request $req, $id)
+    public function reset_password(Request $request)
     {
-        try {
-            $req->validate([
-                'password' => 'required'
-            ]);
+        $request->validate([
+            'token' => 'required',
+            'password' => 'required',
+        ]);
 
-            $user = User::findOrFail($id);
+        $credential = explode("#", base64_decode($request->token));
+        $request->merge([
+            'email' => $credential[0],
+            'token' => $credential[1]
+        ]);
 
-            $user->update([
-                'password' => bcrypt($req->password)
-            ]);
+        $status = Password::reset(
+            $request->all(),
+            function ($user, $password) {
+                $user->forceFill([
+                    'password' => Hash::make($password)
+                ])->setRememberToken(Str::random(60));
 
-            return response()->json([
-                'message' => 'Password has been changed'
-            ], 201);
-        } catch (\Exception $e) {
-            return response()->json(['message' => $e->getMessage()]);
-        }
+                $user->save();
+
+                event(new PasswordReset($user));
+            }
+        );
+
+        return $status;
+
+        return $status === Password::PASSWORD_RESET
+            ? redirect()->route('login')->with('status', __($status))
+            : back()->withErrors(['email' => [__($status)]]);
     }
 }
