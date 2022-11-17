@@ -71,7 +71,6 @@ class RoleController extends Controller
             $validator = Validator::make($req->all(), [
                 'name' => 'required',
                 'email' => 'required|email',
-                'password' => 'required',
                 'role' => 'required'
             ]);
 
@@ -85,7 +84,7 @@ class RoleController extends Controller
                 $data = [
                     'name' => $req->name,
                     'email' => $req->email,
-                    'password' => bcrypt($req->password),
+                    'password' => $user ? $user->password : bcrypt($req->password),
                     'role' => $req->role
                 ];
 
