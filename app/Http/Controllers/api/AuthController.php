@@ -32,7 +32,8 @@ class AuthController extends Controller
             ]);
 
             return response()->json([
-                'data' => $user
+                'data' => $user,
+                'status' => 201,
             ], 201);
         } catch (\Exception $e) {
             return response()->json(['message' => $e->getMessage()], 500);
@@ -58,6 +59,7 @@ class AuthController extends Controller
             }
 
             return response()->json([
+                'status' => 200,
                 'data' => $user,
                 'access_token' => $token,
                 'type' => 'Bearer'
@@ -77,6 +79,7 @@ class AuthController extends Controller
         try {
             Auth::user()->tokens()->where('id', Auth::user()->id)->delete();
             return response()->json([
+                'status' => 200,
                 'message' => 'Logout Success'
             ], 200);
         } catch (\Exception $e) {

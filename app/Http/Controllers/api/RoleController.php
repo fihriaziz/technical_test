@@ -13,6 +13,7 @@ class RoleController extends Controller
         try {
             $users = User::all();
             return response()->json([
+                'status' => 201,
                 'data' => $users,
                 'message' => 'Get all user'
             ], 200);
@@ -41,6 +42,7 @@ class RoleController extends Controller
             ]);
 
             return response()->json([
+                'status' => 201,
                 'data' => $user,
                 'message' => 'Create user successully'
             ], 201);
@@ -69,8 +71,9 @@ class RoleController extends Controller
             $user->update($data);
 
             return response()->json([
+                'status' => 200,
                 'message' => 'Update user successfull'
-            ], 201);
+            ], 200);
         } catch (\Exception $e) {
             return response()->json([
                 'message' => $e->getMessage()
@@ -85,6 +88,7 @@ class RoleController extends Controller
             $user->delete();
 
             return response()->json([
+                'status' => 200,
                 'message' => 'Delete user successfull'
             ], 200);
         } catch (\Exception $e) {
@@ -103,6 +107,7 @@ class RoleController extends Controller
             ]);
 
             return response()->json([
+                'status' => 200,
                 'message' => 'Update hak akses'
             ], 200);
         } catch (\Exception $e) {
