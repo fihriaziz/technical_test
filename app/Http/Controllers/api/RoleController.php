@@ -14,7 +14,7 @@ class RoleController extends Controller
         try {
             $users = User::all();
             return response()->json([
-                'status' => 201,
+                'status' => 200,
                 'data' => $users,
                 'message' => 'Get all user'
             ], 200);
@@ -134,14 +134,6 @@ class RoleController extends Controller
     public function changeAkses(Request $req, $id)
     {
         try {
-            $validator = Validator::make($req->role, [
-                'role' => 'required',
-            ]);
-
-            if ($validator->fails()) {
-                return response()->json($validator->errors(), 400);
-            }
-
             $user = User::findOrFail($id);
             if ($user) {
                 $user->update([
