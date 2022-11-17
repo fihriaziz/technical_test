@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\api;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\DB;
 use App\Models\User;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\Request;
@@ -11,18 +10,23 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Facades\Validator;
 
 class AuthController extends Controller
 {
     public function register(Request $req)
     {
         try {
-            $req->validate([
+            $validator = Validator::make($req->all(), [
                 'name' => 'required',
                 'email' => 'required|email|unique:users,email',
                 'password' => 'required',
                 'role' => 'required'
             ]);
+
+            if ($validator->fails()) {
+                return response()->json($validator->errors(), 422);
+            }
 
             $user = User::create([
                 'name' => $req->name,
@@ -31,10 +35,17 @@ class AuthController extends Controller
                 'role' => $req->role
             ]);
 
+            if ($user) {
+                return response()->json([
+                    'data' => $user,
+                    'status' => 201,
+                ], 201);
+            }
+
             return response()->json([
-                'data' => $user,
-                'status' => 201,
-            ], 201);
+                'status' => 409,
+                'message' => 'Register failed'
+            ], 409);
         } catch (\Exception $e) {
             return response()->json(['message' => $e->getMessage()], 500);
         }
@@ -43,27 +54,32 @@ class AuthController extends Controller
     public function login(Request $req)
     {
         try {
-            $req->validate([
+            $validator = Validator::make($req->all(), [
                 'email' => 'required|email',
                 'password' => 'required'
             ]);
 
-            $user = User::where('email', $req->email)->first();
-            $token = $user->createToken('auth_access')->plainTextToken;
-
-            $credentials = $req->only(['email', 'password']);
-            if (!Auth::attempt($credentials)) {
-                return response()->json([
-                    'message' => 'Unauthorized'
-                ], 401);
+            if ($validator->fails()) {
+                return response()->json($validator->errors(), 403);
             }
 
+            $user = User::where('email', $req->email)->first();
+
+            if ($user) {
+                $token = $user->createToken('auth_access')->plainTextToken;
+                $credentials = $req->only(['email', 'password']);
+                if (Auth::attempt($credentials)) {
+                    return response()->json([
+                        'status' => 200,
+                        'data' => $user,
+                        'access_token' => $token,
+                        'type' => 'Bearer'
+                    ], 200);
+                }
+            }
             return response()->json([
-                'status' => 200,
-                'data' => $user,
-                'access_token' => $token,
-                'type' => 'Bearer'
-            ], 200);
+                'message' => 'Unauthorized'
+            ], 401);
         } catch (\Exception $e) {
             return response()->json(['message:' . $e->getMessage()]);
         }
@@ -90,10 +106,15 @@ class AuthController extends Controller
     public function forgot_password(Request $req)
     {
         try {
-            $credentials = $req->validate([
+            $validator = Validator::make($req->all(), [
                 'email' => 'required|email'
             ]);
-            $status = Password::sendResetLink($credentials);
+
+            if ($validator->fails()) {
+                return response()->json($validator->errors(), 400);
+            }
+
+            $status = Password::sendResetLink($req->only('email'));
 
             return $status = Password::RESET_LINK_SENT
                 ? response()->json(['message' => 'Sent reset password'], 200)
@@ -108,21 +129,25 @@ class AuthController extends Controller
         return $token;
     }
 
-    public function reset_password(Request $request)
+    public function reset_password(Request $req)
     {
-        $request->validate([
+        $validator = Validator::make($req->only(['token', 'password']), [
             'token' => 'required',
-            'password' => 'required',
+            'password' => 'required'
         ]);
 
-        $credential = explode("#", base64_decode($request->token));
-        $request->merge([
+        if ($validator->fails()) {
+            return response()->json($validator->errors(), 400);
+        }
+
+        $credential = explode("#", base64_decode($req->token));
+        $req->merge([
             'email' => $credential[0],
             'token' => $credential[1]
         ]);
 
         $status = Password::reset(
-            $request->all(),
+            $req->all(),
             function ($user, $password) {
                 $user->forceFill([
                     'password' => Hash::make($password)
