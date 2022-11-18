@@ -62,7 +62,7 @@ class AuthController extends Controller
                 }
             }
             return response()->json([
-                'message' => 'Unauthorized'
+                'message' => 'something wrong email or password'
             ], 401);
         } catch (\Exception $e) {
             return response()->json(['message:' . $e->getMessage()]);
