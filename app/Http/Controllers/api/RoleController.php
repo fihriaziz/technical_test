@@ -4,8 +4,8 @@ namespace App\Http\Controllers\api;
 
 use App\Models\User;
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
+use App\Http\Requests\RegisterRequest;
+use App\Http\Requests\UpdateRoleRequest;
 
 class RoleController extends Controller
 {
@@ -25,20 +25,9 @@ class RoleController extends Controller
         }
     }
 
-    public function addUser(Request $req)
+    public function addUser(RegisterRequest $req)
     {
         try {
-            $validator = Validator::make($req->all(), [
-                'name' => 'required',
-                'email' => 'required|email|unique:users,email',
-                'password' => 'required',
-                'role' => 'required'
-            ]);
-
-            if ($validator->fails()) {
-                return response()->json($validator->errors(), 400);
-            }
-
             $user = User::create([
                 'name' => $req->name,
                 'email' => $req->email,
@@ -53,31 +42,17 @@ class RoleController extends Controller
                     'message' => 'Create user success'
                 ], 201);
             }
-
+        } catch (\Exception $e) {
             return response()->json([
                 'status' => 409,
                 'message' => 'Failed to save data'
             ], 409);
-        } catch (\Exception $e) {
-            return response()->json([
-                'message' => $e->getMessage()
-            ]);
         }
     }
 
-    public function update(Request $req, $id)
+    public function update(UpdateRoleRequest $req, $id)
     {
         try {
-            $validator = Validator::make($req->all(), [
-                'name' => 'required',
-                'email' => 'required|email',
-                'role' => 'required'
-            ]);
-
-            if ($validator->fails()) {
-                return response()->json($validator->errors(), 400);
-            }
-
             $user = User::findOrFail($id);
 
             if ($user) {
@@ -95,14 +70,10 @@ class RoleController extends Controller
                     'message' => 'Update user success'
                 ], 200);
             }
-
+        } catch (\Exception $e) {
             return response()->json([
                 'status' => 404,
                 'message' => 'User not found'
-            ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'message' => $e->getMessage()
             ]);
         }
     }
@@ -119,40 +90,30 @@ class RoleController extends Controller
                     'message' => 'Delete user success'
                 ], 200);
             }
-
+        } catch (\Exception $e) {
             return response()->json([
                 'status' => 404,
                 'message' => 'User not found'
             ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'message' => $e->getMessage()
-            ]);
         }
     }
 
-    public function changeAkses(Request $req, $id)
+    public function changeAkses($id)
     {
         try {
             $user = User::findOrFail($id);
-            if ($user) {
-                $user->update([
-                    'role' => $req->role
-                ]);
-
-                return response()->json([
-                    'status' => 200,
-                    'message' => 'Update role success'
-                ], 200);
+            if ($user->role == 'Admin') {
+                $user->update(['role' => 'User']);
+            } else {
+                $user->update(['role' => 'Admin']);
             }
-
             return response()->json([
-                'status' => 404,
-                'message' => 'Role not found'
-            ]);
+                'status' => 200,
+                'message' => 'Change hak akses success'
+            ], 200);
         } catch (\Exception $e) {
             return response()->json([
-                'message' => $e->getMessage()
+                'message' => 'User not found'
             ]);
         }
     }
