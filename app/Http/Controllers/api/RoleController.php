@@ -6,8 +6,6 @@ use App\Models\User;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\RegisterRequest;
 use App\Http\Requests\UpdateRoleRequest;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
 
 class RoleController extends Controller
 {
@@ -44,15 +42,11 @@ class RoleController extends Controller
                     'message' => 'Create user successully'
                 ], 201);
             }
-
+        } catch (\Exception $e) {
             return response()->json([
                 'status' => 409,
                 'message' => 'User failed to save'
             ], 409);
-        } catch (\Exception $e) {
-            return response()->json([
-                'message' => $e->getMessage()
-            ]);
         }
     }
 
@@ -76,14 +70,10 @@ class RoleController extends Controller
                     'message' => 'Update user successfull'
                 ], 200);
             }
-
+        } catch (\Exception $e) {
             return response()->json([
                 'status' => 404,
                 'message' => 'User not found'
-            ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'message' => $e->getMessage()
             ]);
         }
     }
@@ -100,48 +90,30 @@ class RoleController extends Controller
                     'message' => 'Delete user successfull'
                 ], 200);
             }
-
+        } catch (\Exception $e) {
             return response()->json([
                 'status' => 404,
                 'message' => 'User not found'
             ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'message' => $e->getMessage()
-            ]);
         }
     }
 
-    public function changeAkses(Request $req, $id)
+    public function changeAkses($id)
     {
         try {
-            $validator = Validator::make($req->role, [
-                'role' => 'required',
-            ]);
-
-            if ($validator->fails()) {
-                return response()->json($validator->errors(), 400);
-            }
-
             $user = User::findOrFail($id);
-            if ($user) {
-                $user->update([
-                    'role' => $req->role
-                ]);
-
-                return response()->json([
-                    'status' => 200,
-                    'message' => 'Update hak akses'
-                ], 200);
+            if ($user->role == 'Admin') {
+                $user->update(['role' => 'User']);
+            } else {
+                $user->update(['role' => 'Admin']);
             }
-
             return response()->json([
-                'status' => 404,
-                'message' => 'Role not found'
-            ]);
+                'status' => 200,
+                'message' => 'Update hak akses'
+            ], 200);
         } catch (\Exception $e) {
             return response()->json([
-                'message' => $e->getMessage()
+                'message' => 'User not found'
             ]);
         }
     }
