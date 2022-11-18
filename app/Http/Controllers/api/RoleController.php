@@ -20,7 +20,7 @@ class RoleController extends Controller
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
-                'message' => 'Data not found'
+                'message' => 'Data user not found'
             ], 400);
         }
     }
@@ -50,13 +50,13 @@ class RoleController extends Controller
                 return response()->json([
                     'status' => 201,
                     'data' => $user,
-                    'message' => 'Create user successully'
+                    'message' => 'Create user success'
                 ], 201);
             }
 
             return response()->json([
                 'status' => 409,
-                'message' => 'User failed to save'
+                'message' => 'Failed to save data'
             ], 409);
         } catch (\Exception $e) {
             return response()->json([
@@ -92,7 +92,7 @@ class RoleController extends Controller
 
                 return response()->json([
                     'status' => 200,
-                    'message' => 'Update user successfull'
+                    'message' => 'Update user success'
                 ], 200);
             }
 
@@ -116,7 +116,7 @@ class RoleController extends Controller
 
                 return response()->json([
                     'status' => 200,
-                    'message' => 'Delete user successfull'
+                    'message' => 'Delete user success'
                 ], 200);
             }
 
@@ -142,7 +142,7 @@ class RoleController extends Controller
 
                 return response()->json([
                     'status' => 200,
-                    'message' => 'Update hak akses'
+                    'message' => 'Update role success'
                 ], 200);
             }
 
