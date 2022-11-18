@@ -4,6 +4,8 @@ namespace App\Http\Controllers\api;
 
 use App\Models\User;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\RegisterRequest;
+use App\Http\Requests\UpdateRoleRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
@@ -25,20 +27,9 @@ class RoleController extends Controller
         }
     }
 
-    public function addUser(Request $req)
+    public function addUser(RegisterRequest $req)
     {
         try {
-            $validator = Validator::make($req->all(), [
-                'name' => 'required',
-                'email' => 'required|email|unique:users,email',
-                'password' => 'required',
-                'role' => 'required'
-            ]);
-
-            if ($validator->fails()) {
-                return response()->json($validator->errors(), 400);
-            }
-
             $user = User::create([
                 'name' => $req->name,
                 'email' => $req->email,
@@ -65,19 +56,9 @@ class RoleController extends Controller
         }
     }
 
-    public function update(Request $req, $id)
+    public function update(UpdateRoleRequest $req, $id)
     {
         try {
-            $validator = Validator::make($req->all(), [
-                'name' => 'required',
-                'email' => 'required|email',
-                'role' => 'required'
-            ]);
-
-            if ($validator->fails()) {
-                return response()->json($validator->errors(), 400);
-            }
-
             $user = User::findOrFail($id);
 
             if ($user) {
